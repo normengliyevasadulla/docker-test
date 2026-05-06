@@ -1,0 +1,65 @@
+1. Topic yaratish
+docker exec -it kafka /opt/kafka/bin/kafka-topics.sh \
+--bootstrap-server localhost:9092 \
+--create \
+--topic orders \
+--partitions 3 \
+--replication-factor 1
+
+2. Topicni tekshirish:
+docker exec -it kafka /opt/kafka/bin/kafka-topics.sh \
+--bootstrap-server localhost:9092 \
+--describe \
+--topic orders
+
+3. Topic list:
+docker exec -it kafka /opt/kafka/bin/kafka-topics.sh \
+--bootstrap-server localhost:9092 \
+--list
+
+4. Message yuborish (KEYSIZ)
+docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh \
+--bootstrap-server localhost:9092 \
+--topic orders
+
+5. Messageni o'qish
+docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
+--bootstrap-server localhost:9092 \
+--topic orders \
+--from-beginning
+
+6. Message yuborish (Key bilan)
+docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh \
+--bootstrap-server localhost:9092 \
+--topic orders \
+--property parse.key=true \
+--property key.separator=:
+
+7. Consumerda  o'qish (Key bilan)
+docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
+--bootstrap-server localhost:9092 \
+--topic orders \
+--from-beginning \
+--property print.key=true \
+--property key.separator=" => "
+
+8. Consumer Group bilan o'qish
+docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
+--bootstrap-server localhost:9092 \
+--topic orders \
+--group order-group
+
+9. Consumer gruoup holati
+docker exec -it kafka /opt/kafka/bin/kafka-consumer-groups.sh \
+--bootstrap-server localhost:9092 \
+--describe \
+--group order-group
+
+10. Consumer Group Key bilan o'qish
+docker exec -it kafka /opt/kafka/bin/kafka-console-consumer.sh \
+--bootstrap-server localhost:9092 \
+--topic orders \
+--from-beginning \
+--property print.key=true \
+--property key.separator=" => " \
+--group order-group

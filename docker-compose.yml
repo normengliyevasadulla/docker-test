@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: apache/kafka:3.7.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      #Kraft mode
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      #Listeners
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      # Single-node dev settings
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+  postgres-test:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: postgres-test
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # container o'chib ketsa nimadur sabablar bo'lsa ma'lumotlar saqlanib qolishi
+    healthcheck:  # DB tayyor bo‘lguncha kutadi keyin Spring Boot start qiladi
+      test: ["CMD-SHELL","pg_isready -U postgres"]
+      interval: 5s  # har 5 sekundda tekshir
+      timeout: 5s   # buyruq 5 sekund ichida javob bermasa → failed
+      retries: 5    # 5 marta ketma-ket failed bo‘lsa → unhealthy
+
+  docker-test:
+    image: asadulla743/java-app:latest  # Build o'rniga Docker Hub-dagi tayyor Image olib ishlatadi
+    container_name: docker-test-server
+    ports:
+      - "8083:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-test:5432/postgres-test
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+    depends_on:   # Spring Boot container faqat PostgreSQL healthy bo‘lgandan keyin start bo‘lsin
+      postgres-test:
+        condition: service_healthy
+volumes:
+  postgres_data:  # tepadagi volumes
