@@ -1,8 +1,7 @@
 package com.example.test;
 
-// test branch
 public class Apple {
     void eat() {
-        System.out.println("eat apple in test");
+        System.out.println("Salom TEST dan"); // Xuddi o'sha qator, lekin boshqa matn
     }
 }
