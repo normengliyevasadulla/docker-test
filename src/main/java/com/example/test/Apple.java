@@ -5,3 +5,4 @@ public class Apple {
         System.out.println("Salom TEST dan"); // Xuddi o'sha qator, lekin boshqa matn
     }
 }
+
